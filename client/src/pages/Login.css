@@ -1,0 +1,364 @@
+/* Login page — relies on the :root tokens (--bg, --card, --accent, ...)
+   and the .btn / .alert styles from your global stylesheet. */
+
+.auth-page {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 24px 16px;
+}
+
+.auth-card {
+    width: min(420px, 100%);
+    padding: 28px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+}
+
+.auth-card.shake {
+    animation: auth-shake 0.4s ease-in-out;
+}
+
+@keyframes auth-shake {
+
+    20%,
+    60% {
+        transform: translateX(-6px);
+    }
+
+    40%,
+    80% {
+        transform: translateX(6px);
+    }
+}
+
+/* ---------- Tabs with sliding indicator ---------- */
+
+.auth-tabs {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 4px;
+    margin-bottom: 24px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+}
+
+.auth-tabs::before {
+    content: "";
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    left: 4px;
+    width: calc(50% - 4px);
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.auth-tabs[data-active="register"]::before {
+    transform: translateX(100%);
+}
+
+.auth-tabs button {
+    position: relative;
+    z-index: 1;
+    padding: 8px;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font-weight: 600;
+    border-radius: 7px;
+    transition: color 0.2s;
+}
+
+.auth-tabs button.on {
+    color: var(--fg);
+}
+
+/* ---------- Heading ---------- */
+
+.auth-head h1 {
+    margin: 0 0 4px;
+    font-size: 24px;
+    line-height: 1.2;
+}
+
+.auth-head p {
+    margin: 0 0 22px;
+    color: var(--muted);
+}
+
+/* ---------- Fields ---------- */
+
+.field {
+    margin-bottom: 16px;
+}
+
+.field label,
+.check {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.field label {
+    display: block;
+    margin-bottom: 6px;
+}
+
+.field input:not([type="checkbox"]) {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--card);
+    color: var(--fg);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.field input:not([type="checkbox"]):focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+.field input[aria-invalid="true"] {
+    border-color: var(--danger);
+}
+
+.field input[aria-invalid="true"]:focus {
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+}
+
+.field input:disabled {
+    opacity: 0.6;
+}
+
+.field-error,
+.field-hint {
+    margin: 6px 0 0;
+    font-size: 12px;
+}
+
+.field-error {
+    color: var(--danger);
+}
+
+.field-hint.warn {
+    color: #b45309;
+}
+
+@media (prefers-color-scheme: dark) {
+    .field-hint.warn {
+        color: #fbbf24;
+    }
+}
+
+/* ---------- Password visibility ---------- */
+
+.pw-wrap {
+    position: relative;
+}
+
+.pw-wrap input {
+    padding-right: 44px !important;
+}
+
+.pw-toggle {
+    position: absolute;
+    top: 50%;
+    right: 6px;
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    transform: translateY(-50%);
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--muted);
+}
+
+.pw-toggle:hover {
+    background: var(--bg);
+    color: var(--fg);
+}
+
+/* ---------- Smooth collapse (height: 0 -> auto) ---------- */
+
+.collapse {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition: grid-template-rows 0.28s ease, opacity 0.2s ease;
+}
+
+.collapse.open {
+    grid-template-rows: 1fr;
+    opacity: 1;
+}
+
+.collapse-inner {
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* Small breathing room inside collapsible blocks */
+.collapse.open>.collapse-inner>.field {
+    padding-bottom: 0;
+}
+
+/* ---------- Strength meter ---------- */
+
+.meter {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    margin-top: 10px;
+}
+
+.meter span {
+    height: 5px;
+    border-radius: 99px;
+    background: var(--line);
+    transition: background 0.25s;
+}
+
+.meter[data-level="1"] span:nth-child(-n + 1) {
+    background: var(--danger);
+}
+
+.meter[data-level="2"] span:nth-child(-n + 2) {
+    background: #f59e0b;
+}
+
+.meter[data-level="3"] span:nth-child(-n + 3) {
+    background: #84cc16;
+}
+
+.meter[data-level="4"] span {
+    background: var(--success);
+}
+
+.meter-label {
+    margin: 6px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.meter-label strong {
+    color: var(--fg);
+}
+
+.rules {
+    margin: 8px 0 2px;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.rules li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.2s;
+}
+
+.rules li.pass {
+    color: var(--success);
+}
+
+.rules .tick {
+    width: 14px;
+    text-align: center;
+    font-weight: 700;
+}
+
+/* ---------- Checkbox ---------- */
+
+.check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    color: var(--muted);
+    cursor: pointer;
+}
+
+.check input {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent);
+}
+
+/* ---------- Submit + spinner ---------- */
+
+.auth-submit {
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+}
+
+.spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: auth-spin 0.7s linear infinite;
+}
+
+@keyframes auth-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ---------- Footer switch ---------- */
+
+.auth-switch {
+    margin: 18px 0 0;
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.link {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.link:hover {
+    text-decoration: underline;
+}
+
+/* ---------- Reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .auth-card.shake,
+    .spinner {
+        animation-duration: 0.01ms;
+        animation-iteration-count: 1;
+    }
+
+    .collapse,
+    .auth-tabs::before,
+    .meter span {
+        transition: none;
+    }
+}
