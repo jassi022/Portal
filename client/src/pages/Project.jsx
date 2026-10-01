@@ -72,6 +72,7 @@ export default function Project() {
   const [sort, setSort] = useState('newest');
 
   const [title, setTitle] = useState('');
+  const [newAssignee, setNewAssignee] = useState('');
   const [editing, setEditing] = useState(null);
   const [confirm, setConfirm] = useState(null);
 
@@ -129,13 +130,15 @@ export default function Project() {
     }
   };
 
-  const quick = async (task, changes) => {
+  // changes = what is sent to the API
+  // optimistic = what is shown in the UI right away (defaults to changes)
+  const quick = async (task, changes, optimistic = changes) => {
     const previous = tasks;
 
     setTasks((current) =>
       current.map((item) =>
         item._id === task._id
-          ? { ...item, ...changes }
+          ? { ...item, ...optimistic }
           : item
       )
     );
@@ -151,6 +154,20 @@ export default function Project() {
       setTasks(previous);
       toast(e.message || 'Unable to update task', 'err');
     }
+  };
+
+  const changeAssignee = (task, userId) => {
+    const member = members.find((m) => m.userId === userId);
+
+    quick(
+      task,
+      { assignee: userId || null },
+      {
+        assignee: member
+          ? { _id: member.userId, name: member.name }
+          : null,
+      }
+    );
   };
 
   const addTask = async (e) => {
@@ -171,6 +188,7 @@ export default function Project() {
             title: cleanTitle,
             status: 'TODO',
             priority: 'MEDIUM',
+            assignee: newAssignee || null,
           },
         }),
       'Task added'
@@ -178,6 +196,7 @@ export default function Project() {
 
     if (success) {
       setTitle('');
+      setNewAssignee('');
     }
   };
 
@@ -458,6 +477,23 @@ export default function Project() {
             aria-label="New task title"
           />
 
+          <select
+            value={newAssignee}
+            onChange={(e) => setNewAssignee(e.target.value)}
+            aria-label="Assign new task to"
+          >
+            <option value="">Unassigned</option>
+
+            {members.map((member) => (
+              <option
+                key={member.userId}
+                value={member.userId}
+              >
+                {member.name}
+              </option>
+            ))}
+          </select>
+
           <button
             className="btn primary"
             disabled={saving || !title.trim()}
@@ -663,8 +699,34 @@ export default function Project() {
                           .toUpperCase()}
                       </span>
 
-                      {task.assignee?.name ||
-                        'Unassigned'}
+                      <select
+                        aria-label="Task assignee"
+                        value={task.assignee?._id || ''}
+                        onChange={(e) =>
+                          changeAssignee(task, e.target.value)
+                        }
+                      >
+                        <option value="">Unassigned</option>
+
+                        {/* Assignee who is no longer an org member */}
+                        {task.assignee?._id &&
+                          !members.some(
+                            (m) => m.userId === task.assignee._id
+                          ) && (
+                            <option value={task.assignee._id} disabled>
+                              {task.assignee.name} (former member)
+                            </option>
+                          )}
+
+                        {members.map((member) => (
+                          <option
+                            key={member.userId}
+                            value={member.userId}
+                          >
+                            {member.name}
+                          </option>
+                        ))}
+                      </select>
                     </span>
                   </div>
                 </div>
@@ -872,6 +934,10 @@ function TaskModal({
       [key]: e.target.value,
     });
 
+  const assigneeIsFormer =
+    task.assignee?._id &&
+    !members.some((m) => m.userId === task.assignee._id);
+
   return (
     <Dialog
       title="Edit task"
@@ -957,6 +1023,12 @@ function TaskModal({
               <option value="">
                 Unassigned
               </option>
+
+              {assigneeIsFormer && (
+                <option value={task.assignee._id} disabled>
+                  {task.assignee.name} (former member)
+                </option>
+              )}
 
               {members.map((member) => (
                 <option
